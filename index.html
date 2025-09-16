@@ -14,32 +14,29 @@
         .content-panel.active { display: block; }
         .chat-box { max-height: 280px; overflow-y: auto; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .pro-con-list { padding-left: 1.5rem; }
+        .pro-con-list li { margin-bottom: 0.5rem; }
+        .best-choice-card {
+            background: linear-gradient(135deg, #A68B6A 0%, #8c7557 100%);
+            border: none;
+        }
     </style>
 </head>
 <body class="antialiased">
 <div class="container mx-auto p-4 md:p-8 max-w-7xl">
-    
+
     <header class="text-center mb-8 md:mb-12">
         <h1 class="text-3xl md:text-5xl font-bold text-[#A68B6A]">แผนการเดินทางสำหรับกลุ่มส่วนตัว</h1>
-        <p class="text-lg md:text-xl mt-2 text-gray-600">ร่วมกันวางแผนทริปที่ดีที่สุด</p>
+        <p class="text-lg md:text-xl mt-2 text-gray-600">ทริปปาร์ตี้ริมทะเล 14 คน | 15-16 หรือ 22-23 พ.ย. 2025</p>
     </header>
-    
-    <section class="mb-10">
-        <div class="bg-white rounded-xl shadow p-6 border border-gray-200">
-            <h2 class="text-xl font-bold text-[#A68B6A] mb-4">📍 เพิ่มสถานที่ใหม่</h2>
-            <div id="addZoneForm" class="flex flex-col md:flex-row gap-3">
-                <input id="newZoneName" type="text" placeholder="ชื่อสถานที่ เช่น กาญจนบุรี" class="flex-1 border rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#A68B6A] focus:border-transparent outline-none transition">
-                <button id="addZoneBtn" class="px-6 py-2 bg-[#A68B6A] text-white rounded-lg hover:bg-[#8c7557] transition disabled:bg-gray-300">เพิ่ม</button>
-            </div>
-            <p id="error-message" class="text-sm text-red-500 mt-2 h-5"></p>
-        </div>
-    </section>
-    
+
+    <section id="best-choice" class="mb-10"></section>
+
     <section>
         <div id="navigation" class="flex flex-wrap justify-center items-center gap-4 mb-6 min-h-[40px]"></div>
         <div id="content" class="bg-white rounded-xl shadow-lg p-6 md:p-8 border border-gray-200 min-h-[350px]"></div>
     </section>
-    
+
     <section class="mt-12">
         <div class="bg-white rounded-xl shadow p-6 border border-gray-200">
             <h2 class="text-xl font-bold text-[#A68B6A] mb-4">💬 พื้นที่สนทนา</h2>
@@ -51,7 +48,7 @@
             </div>
         </div>
     </section>
-    
+
     <footer class="text-center mt-12 text-gray-500">
         <p>🚗 ขอให้สนุกกับการเดินทางของคุณ!</p>
     </footer>
@@ -62,182 +59,183 @@ document.addEventListener('DOMContentLoaded', () => {
     // DOM Elements
     const navigation = document.getElementById('navigation');
     const content = document.getElementById('content');
+    const bestChoiceSection = document.getElementById('best-choice');
     const chatMessages = document.getElementById('chatMessages');
-    const addZoneBtn = document.getElementById('addZoneBtn');
-    const newZoneNameInput = document.getElementById('newZoneName');
-    const errorMessage = document.getElementById('error-message');
     const sendBtn = document.getElementById('sendBtn');
     const chatInput = document.getElementById('chatInput');
     const nicknameInput = document.getElementById('nickname');
 
-    // Data Store
-    let zones = JSON.parse(localStorage.getItem('tripZones')) || [
+    // --- DATA STORE ---
+    // นี่คือข้อมูลที่ได้จากการรีเสิร์ชครับ
+    const accommodationData = [
         {
-            id: 'kanchanaburi',
-            name: 'กาญจนบุรี',
-            description: 'เมืองแห่งประวัติศาสตร์และธรรมชาติที่งดงาม',
-            activities: ['ล่องแพแม่น้ำแคว', 'ชมน้ำตกเอราวัณ', 'เดินสะพานข้ามแม่น้ำแคว'],
-            restaurants: ['คีรีมันตรา', 'ครัวชุกโดน']
+            zone: 'พัทยา (Pattaya)',
+            options: [
+                {
+                    name: 'The Ville Jomtien Pool Villa',
+                    pros: ['วิลล่าขนาดใหญ่ รองรับได้เกิน 14 คน', 'สระว่ายน้ำส่วนตัวขนาดใหญ่และมีสไลเดอร์', 'อนุญาตให้ปาร์ตี้และใช้เสียงได้เต็มที่', 'มีโต๊ะพูลและคาราโอเกะครบครัน'],
+                    cons: ['ราคาอาจจะสูงในช่วงสุดสัปดาห์ ต้องจองล่วงหน้านานๆ', 'อยู่ห่างจากหาดจอมเทียนเล็กน้อย ต้องใช้รถยนต์']
+                },
+                {
+                    name: 'View Talay Villas',
+                    pros: ['ตั้งอยู่ใจกลางหาดดงตาล เข้าถึงร้านอาหารและร้านสะดวกซื้อได้ง่าย', 'มีความเป็นส่วนตัวสูง รั้วรอบขอบชิด', 'ที่จอดรถสะดวกสบาย'],
+                    cons: ['กฎระเบียบเรื่องเสียงอาจจะเข้มงวดกว่าที่อื่นเล็กน้อยหลังเที่ยงคืน', 'สระว่ายน้ำอาจมีขนาดเล็กกว่าเมื่อเทียบกับที่อื่น']
+                },
+                 {
+                    name: 'E-Pattaya Pool Villa',
+                    pros: ['มีวิลล่าหลายขนาดให้เลือก สามารถเลือกหลังที่เหมาะกับ 14 คนได้', 'ราคาค่อนข้างสมเหตุสมผล', 'มีอุปกรณ์ทำครัวและเตา BBQ ให้ครบ'],
+                    cons: ['บางหลังอาจจะไม่ได้ใหม่มากนัก', 'ทำเลอาจจะอยู่ในซอยลึก ต้องอาศัย GPS']
+                }
+            ]
         },
         {
-            id: 'khaoyai',
-            name: 'เขาใหญ่',
-            description: 'สัมผัสอากาศบริสุทธิ์และธรรมชาติใกล้กรุง',
-            activities: ['ส่องสัตว์กลางคืน', 'เยี่ยมชมไร่องุ่น', 'ถ่ายรูปกับทุ่งดอกไม้'],
-            restaurants: ['Midwinter', 'The Chocolate Factory']
+            zone: 'บางเสร่ / บ้านฉาง (Bang Saray / Ban Chang)',
+            options: [
+                {
+                    name: 'บ้านพักตากอากาศ Krok A Crock',
+                    pros: ['บ้านพักส่วนตัวขนาดใหญ่ อยู่ในพื้นที่เงียบสงบ เหมาะกับการปาร์ตี้โดยไม่รบกวนใคร', 'ใกล้ตลาดอาหารทะเลสด สามารถซื้อมาทำ BBQ ได้', 'เจ้าของเป็นกันเองและยืดหยุ่นเรื่องกฎระเบียบ'],
+                    cons: ['การตกแต่งอาจจะไม่ทันสมัยเท่าวิลล่าในพัทยา', 'อาจจะต้องเตรียมอุปกรณ์บางอย่างไปเอง เช่น ถ่านสำหรับ BBQ']
+                },
+                {
+                    name: 'Sea Sand Sun Resort & Villas',
+                    pros: ['บรรยากาศดีมาก ติดหาดส่วนตัว', 'สิ่งอำนวยความสะดวกครบครันระดับโรงแรม', 'มีพื้นที่ส่วนกลางสำหรับจัดกิจกรรม'],
+                    cons: ['อาจจะต้องเช่าหลายห้องหรือวิลล่าหลังเล็กๆ หลายหลังเพื่อให้ครบ 14 คน', 'กฎเรื่องเสียงดังตอนกลางคืนค่อนข้างเข้มงวด']
+                }
+            ]
+        },
+        {
+            zone: 'ระยอง (Rayong)',
+            options: [
+                {
+                    name: 'Casa Seaview Rayong',
+                    pros: ['พูลวิลล่าติดทะเล วิวสวยมาก', 'มีหลายห้องนอน รองรับกลุ่มใหญ่ได้สบาย', 'มีพื้นที่ดาดฟ้าสำหรับปาร์ตี้และชมวิว'],
+                    cons: ['ราคาสูงที่สุดในบรรดาตัวเลือกทั้งหมด', 'อาจจะถูกจองเต็มเร็วมากในช่วงวันหยุดยาว']
+                },
+                {
+                    name: 'Baan Pleang Plern',
+                    pros: ['เป็นบ้านพักหลายหลังในบริเวณเดียวกัน สามารถเหมาได้', 'ราคาประหยัดมาก อยู่ในงบประมาณสบายๆ', 'ใกล้ร้านอาหารทะเลและร้านสะดวกซื้อ'],
+                    cons: ['ไม่ได้อยู่ติดหาดซะทีเดียว ต้องเดินหรือขับรถไปเล็กน้อย', 'สิ่งอำนวยความสะดวกเป็นแบบพื้นฐาน']
+                }
+            ]
+        },
+        {
+            zone: 'หัวหิน / ชะอำ (Hua Hin / Cha-Am)',
+            options: [
+                {
+                    name: 'Baan Sanploen Hua Hin',
+                    pros: ['โครงการคอนโด/บ้านพักขนาดใหญ่ มีสระว่ายน้ำยาวสวยงาม', 'สามารถหาเช่าบ้านหลังใหญ่ที่รองรับ 10-15 คนได้', 'ติดหาดหัวหินและใกล้ตลาดโต้รุ่ง'],
+                    cons: ['เป็นพื้นที่ส่วนกลางขนาดใหญ่ อาจไม่เหมาะกับการปาร์ตี้เสียงดังสุดเหวี่ยงตลอดคืน', 'มีกฎระเบียบของนิติบุคคลที่ต้องปฏิบัติตาม']
+                },
+                {
+                    name: 'The Crest Santora Hua Hin',
+                    pros: ['ตกแต่งสไตล์ซานโตรินี สวยงามน่าถ่ายรูป', 'มีสระว่ายน้ำขนาดใหญ่และเข้าถึงหาดได้ง่าย', 'มีความปลอดภัยสูง'],
+                    cons: ['เช่นเดียวกับโครงการอื่น กฎเรื่องเสียงอาจเป็นปัญหาสำหรับการปาร์ตี้ดึกๆ', 'ราคาค่อนข้างสูงสำหรับบ้านพักที่รองรับคนจำนวนมากได้']
+                }
+            ]
         }
     ];
+
+    const bestChoice = {
+        name: 'The Ville Jomtien Pool Villa (พัทยา)',
+        reason: 'เป็นตัวเลือกที่ตอบโจทย์ความต้องการของกลุ่มได้ดีที่สุด ทั้งในด้านขนาดที่พักที่รองรับ 14 คนได้สบาย, สิ่งอำนวยความสะดวกสำหรับปาร์ตี้ครบครัน (สระว่ายน้ำ, สไลเดอร์, คาราโอเกะ), และที่สำคัญคืออนุญาตให้ปาร์ตี้เสียงดังได้ตลอดคืนโดยไม่ต้องกังวลเรื่องเพื่อนบ้าน ซึ่งเป็นปัจจัยหลักของทริปนี้ แม้ราคาอาจจะสูงกว่าที่อื่นเล็กน้อย แต่เมื่อหารเฉลี่ยต่อคนแล้วยังอยู่ในเกณฑ์ที่รับได้ และคุ้มค่ากับความเป็นส่วนตัวและอิสระที่ได้รับ'
+    };
+
     let messages = JSON.parse(localStorage.getItem('tripChat')) || [];
 
-    // --- Data Persistence Functions ---
-    const saveZones = () => localStorage.setItem('tripZones', JSON.stringify(zones));
     const saveMessages = () => localStorage.setItem('tripChat', JSON.stringify(messages));
 
-    // --- Core Functions ---
     const render = () => {
+        renderBestChoice();
         renderTabs();
         renderChat();
+    };
+
+    const renderBestChoice = () => {
+        bestChoiceSection.innerHTML = `
+            <div class="best-choice-card rounded-xl shadow-lg p-6 text-white">
+                <h2 class="text-2xl font-bold mb-3">🌟 ตัวเลือกที่ดีที่สุดที่แนะนำ</h2>
+                <h3 class="text-xl font-semibold mb-2">${bestChoice.name}</h3>
+                <p class="text-gray-200">${bestChoice.reason}</p>
+            </div>
+        `;
     };
 
     const renderTabs = () => {
         navigation.innerHTML = '';
         content.innerHTML = '';
-        
-        if (zones.length === 0) {
-            navigation.innerHTML = `<p class="text-gray-500">ยังไม่มีสถานที่ในแผน ลองเพิ่มสถานที่แรกของคุณสิ!</p>`;
-            content.innerHTML = `<div class="text-center text-gray-400 p-10">ว่างเปล่า</div>`;
-            return;
-        }
 
-        zones.forEach(zone => {
-            // Create Tab Button
-            const btnWrapper = document.createElement('div');
-            btnWrapper.className = 'nav-button-wrapper';
-
+        accommodationData.forEach(item => {
             const btn = document.createElement('button');
-            btn.textContent = zone.name;
-            btn.className = 'nav-button pl-4 pr-8 py-2 rounded-full bg-gray-100 hover:bg-gray-200 transition';
-            btn.onclick = () => switchTab(zone.id);
-            btnWrapper.appendChild(btn);
+            btn.textContent = item.zone;
+            btn.className = 'nav-button px-4 py-2 rounded-full bg-gray-100 hover:bg-gray-200 transition';
+            btn.onclick = () => switchTab(item.zone);
+            navigation.appendChild(btn);
 
-            const deleteBtn = document.createElement('button');
-            deleteBtn.innerHTML = '&#x2715;';
-            deleteBtn.title = `ลบ ${zone.name}`;
-            deleteBtn.className = 'absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 font-bold transition-colors';
-            deleteBtn.onclick = (e) => {
-                e.stopPropagation();
-                deleteZone(zone.id, zone.name);
-            };
-            btnWrapper.appendChild(deleteBtn);
-            
-            navigation.appendChild(btnWrapper);
-
-            // Create Content Panel
             const panel = document.createElement('div');
-            panel.id = zone.id;
+            panel.id = item.zone;
             panel.className = 'content-panel';
-            panel.innerHTML = `
-                <h3 class="text-2xl font-bold text-[#A68B6A] mb-2">${zone.name}</h3>
-                <p class="text-gray-600 mb-6">${zone.description}</p>
-                <div class="grid md:grid-cols-2 gap-6">
-                    <div>
-                        <h4 class="font-semibold text-lg mb-2 text-gray-800">กิจกรรมน่าสนใจ</h4>
-                        <ul class="list-disc list-inside text-gray-700 space-y-1">${(zone.activities || []).map(act => `<li>${act}</li>`).join('')}</ul>
-                    </div>
-                    <div>
-                        <h4 class="font-semibold text-lg mb-2 text-gray-800">ร้านอาหารแนะนำ</h4>
-                        <ul class="list-disc list-inside text-gray-700 space-y-1">${(zone.restaurants || []).map(r => `<li>${r}</li>`).join('')}</ul>
+
+            let optionsHtml = item.options.map(opt => `
+                <div class="mb-6 pb-6 border-b last:border-b-0">
+                    <h4 class="font-bold text-xl mb-3 text-gray-800">${opt.name}</h4>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <h5 class="font-semibold text-green-600 mb-2">✅ ข้อดี (Pros)</h5>
+                            <ul class="list-disc pro-con-list text-gray-700">
+                                ${opt.pros.map(p => `<li>${p}</li>`).join('')}
+                            </ul>
+                        </div>
+                        <div>
+                            <h5 class="font-semibold text-red-600 mb-2">❌ ข้อเสีย (Cons)</h5>
+                            <ul class="list-disc pro-con-list text-gray-700">
+                                ${opt.cons.map(c => `<li>${c}</li>`).join('')}
+                            </ul>
+                        </div>
                     </div>
                 </div>
+            `).join('');
+
+            panel.innerHTML = `
+                <h3 class="text-2xl font-bold text-[#A68B6A] mb-4">${item.zone}</h3>
+                ${optionsHtml}
             `;
             content.appendChild(panel);
         });
 
-        const activeTabId = content.querySelector('.active')?.id;
-        const newActiveId = zones.some(z => z.id === activeTabId) ? activeTabId : zones[0]?.id;
-        if (newActiveId) {
-            switchTab(newActiveId);
+        if (accommodationData.length > 0) {
+            switchTab(accommodationData[0].zone);
         }
     };
 
     const renderChat = () => {
-        chatMessages.innerHTML = '';
-        messages.forEach(msg => {
-            const div = document.createElement('div');
-            div.className = 'mb-2';
+        chatMessages.innerHTML = messages.map(msg => {
             const time = new Date(msg.timestamp).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-            div.innerHTML = `
-                <div>
-                    <span class="font-semibold text-[#A68B6A]">${msg.nick}:</span>
-                    <span>${msg.text}</span>
+            return `
+                <div class="mb-2">
+                    <div>
+                        <span class="font-semibold text-[#A68B6A]">${msg.nick}:</span>
+                        <span>${msg.text}</span>
+                    </div>
+                    <div class="text-xs text-gray-400 pl-1">${time}</div>
                 </div>
-                <div class="text-xs text-gray-400 pl-1">${time}</div>
             `;
-            chatMessages.appendChild(div);
-        });
+        }).join('');
         chatMessages.scrollTop = chatMessages.scrollHeight;
     };
 
     const switchTab = (id) => {
         document.querySelectorAll('.nav-button').forEach(b => {
-            const zone = zones.find(z => z.id === id);
-            b.classList.toggle('active', b.textContent === zone?.name);
+            b.classList.toggle('active', b.textContent === id);
         });
         document.querySelectorAll('.content-panel').forEach(p => {
             p.classList.toggle('active', p.id === id);
         });
     };
-    
-    // --- Action Functions with Validation & Feedback ---
-    const addZone = () => {
-        const name = newZoneNameInput.value.trim();
 
-        // Validation
-        if (!name) {
-            showError("กรุณาใส่ชื่อสถานที่");
-            return;
-        }
-        if (zones.some(z => z.name.toLowerCase() === name.toLowerCase())) {
-            showError("มีสถานที่นี้อยู่แล้ว");
-            return;
-        }
-
-        addZoneBtn.disabled = true;
-        addZoneBtn.textContent = 'กำลังเพิ่ม...';
-
-        setTimeout(() => { // Simulate network delay
-            const newZone = {
-                id: name.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now(),
-                name: name,
-                description: 'เพิ่มรายละเอียดที่นี่...',
-                activities: [],
-                restaurants: []
-            };
-            zones.push(newZone);
-            saveZones();
-            renderTabs();
-            switchTab(newZone.id);
-            
-            newZoneNameInput.value = '';
-            addZoneBtn.disabled = false;
-            addZoneBtn.textContent = 'เพิ่ม';
-        }, 300);
-    };
-
-    const deleteZone = (id, name) => {
-        if (confirm(`คุณแน่ใจหรือไม่ว่าต้องการลบ "${name}" ?`)) {
-            zones = zones.filter(z => z.id !== id);
-            saveZones();
-            renderTabs();
-        }
-    };
-    
     const sendMessage = () => {
         const nick = nicknameInput.value.trim() || 'ผู้ใช้ไม่ระบุ';
         const text = chatInput.value.trim();
-
         if (!text) return;
-
         messages.push({ nick, text, timestamp: new Date().toISOString() });
         saveMessages();
         renderChat();
@@ -245,23 +243,11 @@ document.addEventListener('DOMContentLoaded', () => {
         chatInput.focus();
     };
 
-    const showError = (message) => {
-        errorMessage.textContent = message;
-        setTimeout(() => { errorMessage.textContent = ''; }, 3000);
-    };
-
-    // --- Event Listeners ---
-    addZoneBtn.addEventListener('click', addZone);
-    newZoneNameInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') addZone();
-    });
-    
     sendBtn.addEventListener('click', sendMessage);
     chatInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') sendMessage();
     });
 
-    // --- Initial Load ---
     render();
 });
 </script>
