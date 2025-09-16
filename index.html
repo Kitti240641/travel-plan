@@ -1,127 +1,268 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>แผนการเดินทางกลุ่มส่วนตัว</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    body { font-family: 'Sarabun', sans-serif; background-color: #F8F7F4; color: #3D3B30; }
-    .nav-button.active { background-color: #A68B6A; color: #fff; font-weight: 600; }
-    .content-panel { display: none; }
-    .content-panel.active { display: block; }
-    .chat-box { max-height: 250px; overflow-y: auto; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แผนการเดินทางกลุ่มส่วนตัว (Pro Version)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background-color: #F8F7F4; color: #3D3B30; transition: background-color 0.3s; }
+        .nav-button-wrapper { position: relative; }
+        .nav-button.active { background-color: #A68B6A; color: #fff; font-weight: 600; }
+        .content-panel { display: none; animation: fadeIn 0.5s; }
+        .content-panel.active { display: block; }
+        .chat-box { max-height: 280px; overflow-y: auto; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
 </head>
 <body class="antialiased">
 <div class="container mx-auto p-4 md:p-8 max-w-7xl">
-  
-  <!-- Header -->
-  <header class="text-center mb-8 md:mb-12">
-    <h1 class="text-3xl md:text-5xl font-bold text-[#A68B6A]">แผนการเดินทางสำหรับกลุ่มส่วนตัว</h1>
-    <p class="text-lg md:text-xl mt-2 text-gray-600">ค้นหาทริปพักผ่อนใกล้กรุงเทพฯ สำหรับ 14 ท่าน</p>
-  </header>
-  
-  <!-- Search Section -->
-  <section class="mb-10">
-    <div class="bg-white rounded-xl shadow p-6 border border-gray-200">
-      <h2 class="text-xl font-bold text-[#A68B6A] mb-4">🔍 เพิ่มสถานที่ใหม่</h2>
-      <div class="flex flex-col md:flex-row gap-3">
-        <input id="newZoneName" type="text" placeholder="ชื่อโซน/สถานที่ เช่น เขาใหญ่" class="flex-1 border rounded-lg px-3 py-2">
-        <button id="addZoneBtn" class="px-4 py-2 bg-[#A68B6A] text-white rounded-lg hover:bg-[#8c7557]">เพิ่ม</button>
-      </div>
-      <p class="text-sm text-gray-500 mt-2">*คุณสามารถใส่สถานที่เองเพื่อทดลองรีเสิร์ช</p>
-    </div>
-  </section>
-  
-  <!-- Tabs & Content -->
-  <section>
-    <div id="navigation" class="flex flex-wrap justify-center gap-2 mb-6"></div>
-    <div id="content" class="bg-white rounded-xl shadow-lg p-6 border border-gray-200 min-h-[350px]"></div>
-  </section>
-  
-  <!-- Chat Section -->
-  <section class="mt-12">
-    <div class="bg-white rounded-xl shadow p-6 border border-gray-200">
-      <h2 class="text-xl font-bold text-[#A68B6A] mb-4">💬 พื้นที่แสดงความคิดเห็น / แชท</h2>
-      <div class="chat-box border rounded-lg p-3 mb-3 bg-gray-50" id="chatMessages"></div>
-      <div class="flex flex-col md:flex-row gap-2">
-        <input id="nickname" type="text" placeholder="ชื่อเล่น (ไม่ระบุตัวตน)" class="flex-1 border rounded-lg px-3 py-2">
-        <input id="chatInput" type="text" placeholder="พิมพ์ข้อความ..." class="flex-1 border rounded-lg px-3 py-2">
-        <button id="sendBtn" class="px-4 py-2 bg-[#A68B6A] text-white rounded-lg hover:bg-[#8c7557]">ส่ง</button>
-      </div>
-    </div>
-  </section>
-  
-  <footer class="text-center mt-12 text-gray-500">
-    <p>🚗 ขอให้สนุกกับการเดินทางของคุณ!</p>
-  </footer>
+    
+    <header class="text-center mb-8 md:mb-12">
+        <h1 class="text-3xl md:text-5xl font-bold text-[#A68B6A]">แผนการเดินทางสำหรับกลุ่มส่วนตัว</h1>
+        <p class="text-lg md:text-xl mt-2 text-gray-600">ร่วมกันวางแผนทริปที่ดีที่สุด</p>
+    </header>
+    
+    <section class="mb-10">
+        <div class="bg-white rounded-xl shadow p-6 border border-gray-200">
+            <h2 class="text-xl font-bold text-[#A68B6A] mb-4">📍 เพิ่มสถานที่ใหม่</h2>
+            <div id="addZoneForm" class="flex flex-col md:flex-row gap-3">
+                <input id="newZoneName" type="text" placeholder="ชื่อสถานที่ เช่น กาญจนบุรี" class="flex-1 border rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#A68B6A] focus:border-transparent outline-none transition">
+                <button id="addZoneBtn" class="px-6 py-2 bg-[#A68B6A] text-white rounded-lg hover:bg-[#8c7557] transition disabled:bg-gray-300">เพิ่ม</button>
+            </div>
+            <p id="error-message" class="text-sm text-red-500 mt-2 h-5"></p>
+        </div>
+    </section>
+    
+    <section>
+        <div id="navigation" class="flex flex-wrap justify-center items-center gap-4 mb-6 min-h-[40px]"></div>
+        <div id="content" class="bg-white rounded-xl shadow-lg p-6 md:p-8 border border-gray-200 min-h-[350px]"></div>
+    </section>
+    
+    <section class="mt-12">
+        <div class="bg-white rounded-xl shadow p-6 border border-gray-200">
+            <h2 class="text-xl font-bold text-[#A68B6A] mb-4">💬 พื้นที่สนทนา</h2>
+            <div class="chat-box border rounded-lg p-3 mb-3 bg-gray-50" id="chatMessages"></div>
+            <div class="flex flex-col md:flex-row gap-2">
+                <input id="nickname" type="text" placeholder="ชื่อเล่น" class="md:w-1/4 border rounded-lg px-3 py-2">
+                <input id="chatInput" type="text" placeholder="พิมพ์ข้อความ..." class="flex-1 border rounded-lg px-3 py-2">
+                <button id="sendBtn" class="px-4 py-2 bg-[#A68B6A] text-white rounded-lg hover:bg-[#8c7557]">ส่ง</button>
+            </div>
+        </div>
+    </section>
+    
+    <footer class="text-center mt-12 text-gray-500">
+        <p>🚗 ขอให้สนุกกับการเดินทางของคุณ!</p>
+    </footer>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  const navigation = document.getElementById('navigation');
-  const content = document.getElementById('content');
-  
-  let zones = [
-    { id: 'bangsaray', name: 'บางเสร่', description: 'สมดุลระหว่างสงบและปาร์ตี้ เหมาะกับกลุ่มใหญ่' },
-    { id: 'pattaya', name: 'พัทยา', description: 'แหล่งปาร์ตี้สุดฮิต ที่พักเยอะและหลากหลาย' }
-  ];
+    // DOM Elements
+    const navigation = document.getElementById('navigation');
+    const content = document.getElementById('content');
+    const chatMessages = document.getElementById('chatMessages');
+    const addZoneBtn = document.getElementById('addZoneBtn');
+    const newZoneNameInput = document.getElementById('newZoneName');
+    const errorMessage = document.getElementById('error-message');
+    const sendBtn = document.getElementById('sendBtn');
+    const chatInput = document.getElementById('chatInput');
+    const nicknameInput = document.getElementById('nickname');
 
-  function renderTabs() {
-    navigation.innerHTML = '';
-    content.innerHTML = '';
-    zones.forEach(zone => {
-      const btn = document.createElement('button');
-      btn.textContent = zone.name;
-      btn.className = 'nav-button px-4 py-2 rounded-full bg-gray-100 hover:bg-gray-200';
-      btn.onclick = () => switchTab(zone.id);
-      navigation.appendChild(btn);
+    // Data Store
+    let zones = JSON.parse(localStorage.getItem('tripZones')) || [
+        {
+            id: 'kanchanaburi',
+            name: 'กาญจนบุรี',
+            description: 'เมืองแห่งประวัติศาสตร์และธรรมชาติที่งดงาม',
+            activities: ['ล่องแพแม่น้ำแคว', 'ชมน้ำตกเอราวัณ', 'เดินสะพานข้ามแม่น้ำแคว'],
+            restaurants: ['คีรีมันตรา', 'ครัวชุกโดน']
+        },
+        {
+            id: 'khaoyai',
+            name: 'เขาใหญ่',
+            description: 'สัมผัสอากาศบริสุทธิ์และธรรมชาติใกล้กรุง',
+            activities: ['ส่องสัตว์กลางคืน', 'เยี่ยมชมไร่องุ่น', 'ถ่ายรูปกับทุ่งดอกไม้'],
+            restaurants: ['Midwinter', 'The Chocolate Factory']
+        }
+    ];
+    let messages = JSON.parse(localStorage.getItem('tripChat')) || [];
 
-      const panel = document.createElement('div');
-      panel.id = zone.id;
-      panel.className = 'content-panel';
-      panel.innerHTML = `<h3 class="text-2xl font-bold text-[#A68B6A] mb-2">${zone.name}</h3>
-                         <p class="text-gray-600">${zone.description}</p>`;
-      content.appendChild(panel);
+    // --- Data Persistence Functions ---
+    const saveZones = () => localStorage.setItem('tripZones', JSON.stringify(zones));
+    const saveMessages = () => localStorage.setItem('tripChat', JSON.stringify(messages));
+
+    // --- Core Functions ---
+    const render = () => {
+        renderTabs();
+        renderChat();
+    };
+
+    const renderTabs = () => {
+        navigation.innerHTML = '';
+        content.innerHTML = '';
+        
+        if (zones.length === 0) {
+            navigation.innerHTML = `<p class="text-gray-500">ยังไม่มีสถานที่ในแผน ลองเพิ่มสถานที่แรกของคุณสิ!</p>`;
+            content.innerHTML = `<div class="text-center text-gray-400 p-10">ว่างเปล่า</div>`;
+            return;
+        }
+
+        zones.forEach(zone => {
+            // Create Tab Button
+            const btnWrapper = document.createElement('div');
+            btnWrapper.className = 'nav-button-wrapper';
+
+            const btn = document.createElement('button');
+            btn.textContent = zone.name;
+            btn.className = 'nav-button pl-4 pr-8 py-2 rounded-full bg-gray-100 hover:bg-gray-200 transition';
+            btn.onclick = () => switchTab(zone.id);
+            btnWrapper.appendChild(btn);
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.innerHTML = '&#x2715;';
+            deleteBtn.title = `ลบ ${zone.name}`;
+            deleteBtn.className = 'absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 font-bold transition-colors';
+            deleteBtn.onclick = (e) => {
+                e.stopPropagation();
+                deleteZone(zone.id, zone.name);
+            };
+            btnWrapper.appendChild(deleteBtn);
+            
+            navigation.appendChild(btnWrapper);
+
+            // Create Content Panel
+            const panel = document.createElement('div');
+            panel.id = zone.id;
+            panel.className = 'content-panel';
+            panel.innerHTML = `
+                <h3 class="text-2xl font-bold text-[#A68B6A] mb-2">${zone.name}</h3>
+                <p class="text-gray-600 mb-6">${zone.description}</p>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="font-semibold text-lg mb-2 text-gray-800">กิจกรรมน่าสนใจ</h4>
+                        <ul class="list-disc list-inside text-gray-700 space-y-1">${(zone.activities || []).map(act => `<li>${act}</li>`).join('')}</ul>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-lg mb-2 text-gray-800">ร้านอาหารแนะนำ</h4>
+                        <ul class="list-disc list-inside text-gray-700 space-y-1">${(zone.restaurants || []).map(r => `<li>${r}</li>`).join('')}</ul>
+                    </div>
+                </div>
+            `;
+            content.appendChild(panel);
+        });
+
+        const activeTabId = content.querySelector('.active')?.id;
+        const newActiveId = zones.some(z => z.id === activeTabId) ? activeTabId : zones[0]?.id;
+        if (newActiveId) {
+            switchTab(newActiveId);
+        }
+    };
+
+    const renderChat = () => {
+        chatMessages.innerHTML = '';
+        messages.forEach(msg => {
+            const div = document.createElement('div');
+            div.className = 'mb-2';
+            const time = new Date(msg.timestamp).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+            div.innerHTML = `
+                <div>
+                    <span class="font-semibold text-[#A68B6A]">${msg.nick}:</span>
+                    <span>${msg.text}</span>
+                </div>
+                <div class="text-xs text-gray-400 pl-1">${time}</div>
+            `;
+            chatMessages.appendChild(div);
+        });
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    };
+
+    const switchTab = (id) => {
+        document.querySelectorAll('.nav-button').forEach(b => {
+            const zone = zones.find(z => z.id === id);
+            b.classList.toggle('active', b.textContent === zone?.name);
+        });
+        document.querySelectorAll('.content-panel').forEach(p => {
+            p.classList.toggle('active', p.id === id);
+        });
+    };
+    
+    // --- Action Functions with Validation & Feedback ---
+    const addZone = () => {
+        const name = newZoneNameInput.value.trim();
+
+        // Validation
+        if (!name) {
+            showError("กรุณาใส่ชื่อสถานที่");
+            return;
+        }
+        if (zones.some(z => z.name.toLowerCase() === name.toLowerCase())) {
+            showError("มีสถานที่นี้อยู่แล้ว");
+            return;
+        }
+
+        addZoneBtn.disabled = true;
+        addZoneBtn.textContent = 'กำลังเพิ่ม...';
+
+        setTimeout(() => { // Simulate network delay
+            const newZone = {
+                id: name.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now(),
+                name: name,
+                description: 'เพิ่มรายละเอียดที่นี่...',
+                activities: [],
+                restaurants: []
+            };
+            zones.push(newZone);
+            saveZones();
+            renderTabs();
+            switchTab(newZone.id);
+            
+            newZoneNameInput.value = '';
+            addZoneBtn.disabled = false;
+            addZoneBtn.textContent = 'เพิ่ม';
+        }, 300);
+    };
+
+    const deleteZone = (id, name) => {
+        if (confirm(`คุณแน่ใจหรือไม่ว่าต้องการลบ "${name}" ?`)) {
+            zones = zones.filter(z => z.id !== id);
+            saveZones();
+            renderTabs();
+        }
+    };
+    
+    const sendMessage = () => {
+        const nick = nicknameInput.value.trim() || 'ผู้ใช้ไม่ระบุ';
+        const text = chatInput.value.trim();
+
+        if (!text) return;
+
+        messages.push({ nick, text, timestamp: new Date().toISOString() });
+        saveMessages();
+        renderChat();
+        chatInput.value = '';
+        chatInput.focus();
+    };
+
+    const showError = (message) => {
+        errorMessage.textContent = message;
+        setTimeout(() => { errorMessage.textContent = ''; }, 3000);
+    };
+
+    // --- Event Listeners ---
+    addZoneBtn.addEventListener('click', addZone);
+    newZoneNameInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') addZone();
     });
-    switchTab(zones[0].id);
-  }
-
-  function switchTab(id) {
-    document.querySelectorAll('.nav-button').forEach(b => {
-      b.classList.toggle('active', b.textContent === zones.find(z => z.id === id).name);
+    
+    sendBtn.addEventListener('click', sendMessage);
+    chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendMessage();
     });
-    document.querySelectorAll('.content-panel').forEach(p => {
-      p.classList.toggle('active', p.id === id);
-    });
-  }
 
-  document.getElementById('addZoneBtn').addEventListener('click', () => {
-    const newName = document.getElementById('newZoneName').value.trim();
-    if (!newName) return;
-    zones.push({ id: newName.toLowerCase().replace(/\s+/g, ''), name: newName, description: 'คุณเพิ่มสถานที่ใหม่นี้เพื่อรีเสิร์ชเอง' });
-    renderTabs();
-    document.getElementById('newZoneName').value = '';
-  });
-
-  renderTabs();
-
-  // Chat Function
-  const chatMessages = document.getElementById('chatMessages');
-  document.getElementById('sendBtn').addEventListener('click', () => {
-    const nick = document.getElementById('nickname').value || 'ผู้ใช้ไม่ระบุ';
-    const msg = document.getElementById('chatInput').value.trim();
-    if (!msg) return;
-    const div = document.createElement('div');
-    div.className = 'mb-1';
-    div.innerHTML = `<span class="font-semibold text-[#A68B6A]">${nick}:</span> ${msg}`;
-    chatMessages.appendChild(div);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-    document.getElementById('chatInput').value = '';
-  });
+    // --- Initial Load ---
+    render();
 });
 </script>
 </body>
