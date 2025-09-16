@@ -1,263 +1,128 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>แผนการเดินทางกลุ่มส่วนตัว</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Chosen Palette: Calm Neutrals -->
-    <!-- Application Structure Plan: The application is designed as a top-down decision-making tool. It starts with a summary of the trip requirements and immediately presents the final recommendation, answering the user's primary question first. This is followed by an interactive radar chart for a quick, high-level comparison of all zones across key factors like privacy and value. Finally, a tabbed navigation system allows users to dive deep into the specific accommodation options for each zone. This structure supports both quick glances for the main takeaway and detailed exploration, making it far more efficient than a linear document. -->
-    <!-- Visualization & Content Choices: Report Info: Final Recommendation -> Goal: Inform -> Viz/Presentation Method: Prominently styled HTML card -> Interaction: Static -> Justification: Highlights the most important conclusion for immediate user understanding. Report Info: Zone characteristics comparison -> Goal: Compare -> Viz/Presentation Method: Chart.js Radar Chart -> Interaction: Hover tooltips for scores -> Justification: Provides a multi-dimensional, at-a-glance comparison that visually supports the final recommendation. Report Info: Accommodation Options per Zone -> Goal: Organize & Inform -> Viz/Presentation Method: Clickable tabs with structured content cards -> Interaction: Click to navigate -> Justification: A classic, intuitive UI pattern for organizing and presenting detailed information without overwhelming the user. -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
-    <style>
-        body {
-            font-family: 'Sarabun', sans-serif;
-            background-color: #F8F7F4;
-            color: #3D3B30;
-        }
-        .chart-container {
-            position: relative;
-            width: 100%;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-            height: 300px;
-            max-height: 400px;
-        }
-        @media (min-width: 768px) {
-            .chart-container {
-                height: 400px;
-            }
-        }
-        .nav-button {
-            transition: all 0.3s ease;
-        }
-        .nav-button.active {
-            background-color: #A68B6A;
-            color: #FFFFFF;
-            font-weight: 600;
-        }
-        .content-panel {
-            display: none;
-        }
-        .content-panel.active {
-            display: block;
-        }
-        .pro-con-list {
-            padding-left: 1.5rem;
-        }
-        .pro-con-list li::before {
-            content: '✓';
-            color: #34D399;
-            font-weight: bold;
-            display: inline-block;
-            width: 1em;
-            margin-left: -1.25em;
-            position: absolute;
-        }
-        .pro-con-list.cons li::before {
-            content: '✗';
-            color: #F87171;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>แผนการเดินทางกลุ่มส่วนตัว</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Sarabun', sans-serif; background-color: #F8F7F4; color: #3D3B30; }
+    .nav-button.active { background-color: #A68B6A; color: #fff; font-weight: 600; }
+    .content-panel { display: none; }
+    .content-panel.active { display: block; }
+    .chat-box { max-height: 250px; overflow-y: auto; }
+  </style>
 </head>
 <body class="antialiased">
-
-    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
-
-        <header class="text-center mb-8 md:mb-12">
-            <h1 class="text-3xl md:text-5xl font-bold text-[#A68B6A]">แผนการเดินทางสำหรับกลุ่มส่วนตัว</h1>
-            <p class="text-lg md:text-xl mt-2 text-gray-600">ค้นหาทริปพักผ่อนใกล้กรุงเทพฯ สำหรับ 14 ท่าน</p>
-        </header>
-
-        <main>
-            <section id="summary" class="mb-12">
-                 <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8 border border-gray-200">
-                    <h2 class="text-2xl font-bold text-[#A68B6A] mb-4">ภาพรวมของทริปและข้อสรุป</h2>
-                    <div class="grid md:grid-cols-2 gap-6">
-                        <div>
-                            <h3 class="font-semibold text-lg mb-3">ความต้องการหลัก</h3>
-                            <ul class="space-y-2 text-gray-700">
-                                <li class="flex items-center"><span class="text-xl mr-3">👥</span> จำนวน 14 ท่าน</li>
-                                <li class="flex items-center"><span class="text-xl mr-3">💰</span> งบประมาณ 1,500-2,000 บาท/คน</li>
-                                <li class="flex items-center"><span class="text-xl mr-3">📅</span> 15-16 หรือ 22-23 พ.ย. 2025</li>
-                                <li class="flex items-center"><span class="text-xl mr-3">🎉</span> ปาร์ตี้เสียงดัง คาราโอเกะได้</li>
-                                <li class="flex items-center"><span class="text-xl mr-3">🚗</span> ที่จอดรถสำหรับ 6-7 คัน</li>
-                            </ul>
-                        </div>
-                        <div class="bg-[#F8F7F4] rounded-xl p-6 border border-dashed border-[#A68B6A]">
-                            <h3 class="font-semibold text-lg mb-2">🏆 ตัวเลือกที่ดีที่สุด</h3>
-                            <p class="text-2xl font-bold text-[#A68B6A] mb-3">พูลวิลล่าส่วนตัวขนาดใหญ่ที่บางเสร่</p>
-                            <p class="text-gray-700">บางเสร่มีความลงตัวที่สุด ทั้งในด้านความเป็นส่วนตัวสำหรับจัดปาร์ตี้, ความคุ้มค่า, การเดินทางที่สะดวก และบรรยากาศที่ผ่อนคลาย เหมาะกับกลุ่มของคุณที่สุด และมีโอกาสสูงที่จะได้ที่พักที่สามารถฉลองได้อย่างเต็มที่โดยไม่ต้องกังวล</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section id="comparison" class="mb-12 md:mb-16">
-                 <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8 border border-gray-200">
-                    <h2 class="text-2xl font-bold text-center text-[#A68B6A] mb-2">เปรียบเทียบโซนที่พัก</h2>
-                    <p class="text-center text-gray-600 mb-6 max-w-2xl mx-auto">ชาร์ตนี้เปรียบเทียบโซนต่างๆ ตามปัจจัยสำคัญสำหรับทริปของคุณ ยิ่งรูปทรงมีขนาดใหญ่ หมายถึงยิ่งเหมาะสมกับความต้องการของกลุ่ม</p>
-                    <div class="chart-container">
-                        <canvas id="zoneComparisonChart"></canvas>
-                    </div>
-                </div>
-            </section>
-
-            <section id="details">
-                <div id="navigation" class="flex flex-wrap justify-center gap-2 md:gap-4 mb-8">
-                </div>
-
-                <div id="content" class="bg-white rounded-2xl shadow-lg p-6 md:p-8 border border-gray-200 min-h-[500px]">
-                </div>
-            </section>
-        </main>
-
-        <footer class="text-center mt-12 text-gray-500">
-            <p>ขอให้สนุกกับการเดินทางของคุณ!</p>
-        </footer>
+<div class="container mx-auto p-4 md:p-8 max-w-7xl">
+  
+  <!-- Header -->
+  <header class="text-center mb-8 md:mb-12">
+    <h1 class="text-3xl md:text-5xl font-bold text-[#A68B6A]">แผนการเดินทางสำหรับกลุ่มส่วนตัว</h1>
+    <p class="text-lg md:text-xl mt-2 text-gray-600">ค้นหาทริปพักผ่อนใกล้กรุงเทพฯ สำหรับ 14 ท่าน</p>
+  </header>
+  
+  <!-- Search Section -->
+  <section class="mb-10">
+    <div class="bg-white rounded-xl shadow p-6 border border-gray-200">
+      <h2 class="text-xl font-bold text-[#A68B6A] mb-4">🔍 เพิ่มสถานที่ใหม่</h2>
+      <div class="flex flex-col md:flex-row gap-3">
+        <input id="newZoneName" type="text" placeholder="ชื่อโซน/สถานที่ เช่น เขาใหญ่" class="flex-1 border rounded-lg px-3 py-2">
+        <button id="addZoneBtn" class="px-4 py-2 bg-[#A68B6A] text-white rounded-lg hover:bg-[#8c7557]">เพิ่ม</button>
+      </div>
+      <p class="text-sm text-gray-500 mt-2">*คุณสามารถใส่สถานที่เองเพื่อทดลองรีเสิร์ช</p>
     </div>
+  </section>
+  
+  <!-- Tabs & Content -->
+  <section>
+    <div id="navigation" class="flex flex-wrap justify-center gap-2 mb-6"></div>
+    <div id="content" class="bg-white rounded-xl shadow-lg p-6 border border-gray-200 min-h-[350px]"></div>
+  </section>
+  
+  <!-- Chat Section -->
+  <section class="mt-12">
+    <div class="bg-white rounded-xl shadow p-6 border border-gray-200">
+      <h2 class="text-xl font-bold text-[#A68B6A] mb-4">💬 พื้นที่แสดงความคิดเห็น / แชท</h2>
+      <div class="chat-box border rounded-lg p-3 mb-3 bg-gray-50" id="chatMessages"></div>
+      <div class="flex flex-col md:flex-row gap-2">
+        <input id="nickname" type="text" placeholder="ชื่อเล่น (ไม่ระบุตัวตน)" class="flex-1 border rounded-lg px-3 py-2">
+        <input id="chatInput" type="text" placeholder="พิมพ์ข้อความ..." class="flex-1 border rounded-lg px-3 py-2">
+        <button id="sendBtn" class="px-4 py-2 bg-[#A68B6A] text-white rounded-lg hover:bg-[#8c7557]">ส่ง</button>
+      </div>
+    </div>
+  </section>
+  
+  <footer class="text-center mt-12 text-gray-500">
+    <p>🚗 ขอให้สนุกกับการเดินทางของคุณ!</p>
+  </footer>
+</div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const tripData = {
-                zones: [
-                    {
-                        id: 'pattaya',
-                        name: 'พัทยา / จอมเทียน',
-                        description: 'โซนนี้มีตัวเลือกที่พักเยอะและสะดวกสบายที่สุด แต่ต้องเลือกให้ดีเพื่อให้ได้ความเป็นส่วนตัวสำหรับงานปาร์ตี้',
-                        options: [
-                            { name: 'เดอะ วิลล์ จอมเทียน พูลวิลล่า', price: 'ประมาณ 15,000 - 25,000 บาท/คืน', pros: ['ออกแบบมาสำหรับปาร์ตี้โดยเฉพาะ', 'มีครัว, เตาบาร์บีคิว, คาราโอเกะครบ', 'รองรับได้ 15 คนขึ้นไป'], cons: ['อาจให้ความรู้สึกเหมือน "โรงงานปาร์ตี้"', 'ไม่ใช่ที่พักสไตล์บ้านเดี่ยวๆ', 'อยู่ใกล้กับกลุ่มปาร์ตี้อื่นๆ'] },
-                            { name: 'วิวทะเล วิลล่า (จอมเทียน)', price: 'ประมาณ 12,000 - 20,000 บาท/คืน', pros: ['อยู่ในหมู่บ้านที่มีระบบรักษาความปลอดภัยดี', 'มีสระว่ายน้ำส่วนตัว', 'ทำเลดี ใกล้หาดและตลาด'], cons: ['เป็นสไตล์รีสอร์ทที่พักอาศัย', 'อาจมีปัญหากับการปาร์ตี้เสียงดังทั้งคืน', 'ต้องเช็คกฎเรื่องเสียงให้ดี'] },
-                            { name: 'จอมเทียน วารี 9 (บ้านดุสิต พัทยา พาร์ค)', price: 'ประมาณ 10,000 - 18,000 บาท/คืน', pros: ['บ้านหลังใหญ่ 6-8 ห้องนอน ในราคาที่คุ้มค่า', 'อยู่ในโครงการหมู่บ้าน มีความเป็นส่วนตัว', 'มีคาราโอเกะ, สระว่ายน้ำ, เตาปิ้งย่าง'], cons: ['อยู่ลึกเข้ามา ต้องขับรถไปหาด', 'ต้องเช็คกฎของบ้านเรื่องเสียงดัง', 'มีเพื่อนบ้านอาศัยอยู่'] }
-                        ]
-                    },
-                    {
-                        id: 'bangsaray',
-                        name: 'บางเสร่ / บ้านฉาง',
-                        description: 'มีความสมดุลระหว่างความสงบ, ความเป็นส่วนตัว และความคุ้มค่า มาพร้อมกับชายหาดที่สวยงามและคนไม่พลุกพล่าน เป็นโซนที่แนะนำที่สุด',
-                        options: [
-                            { name: 'บ้านต๊ะ ออน เดอะ ซี', price: 'ประมาณ 18,000 - 28,000 บาท/คืน', pros: ['บ้านพักบนทะเล บรรยากาศไม่เหมือนใคร', 'เสียงคลื่นช่วยกลบเสียงปาร์ตี้ได้ดี', 'วิวสวยและน่าจดจำมาก'], cons: ['ไม่มีสระว่ายน้ำ', 'ต้องระมัดระวังเรื่องความปลอดภัยเป็นพิเศษ', 'พื้นที่จัดปาร์ตี้อาจไม่กว้างเท่าวิลล่าบนบก'] },
-                            { name: 'วิลล่าส่วนตัวใกล้หาดบางเสร่', price: 'ประมาณ 14,000 - 22,000 บาท/คืน', pros: ['วิลล่าส่วนตัวจริงๆ ไม่ได้อยู่ในโครงการใหญ่', 'ที่พักสร้างใหม่ สิ่งอำนวยความสะดวกครบ', 'เหมาะกับการเลี่ยงปัญหาเรื่องเสียงดังรบกวน'], cons: ['ต้องใช้รถในการเดินทางไปร้านสะดวกซื้อ', 'มีตัวเลือกน้อยกว่าพัทยา'] },
-                            { name: 'เมาน์เทน บีช วิลล่า', price: 'ประมาณ 10,000 - 17,000 บาท/คืน', pros: ['มีพื้นที่กว้างขวาง เป็นส่วนตัวสูง', 'คุ้มค่ากับราคา', 'มีวิวภูเขาและยังใกล้ทะเล'], cons: ['ทำเลค่อนข้างห่างไกล', 'การเดินทางไปร้านค้าต้องใช้รถยนต์'] }
-                        ]
-                    },
-                    {
-                        id: 'rayong',
-                        name: 'ระยอง',
-                        description: 'มีชื่อเสียงด้านชายหาดที่ทอดยาวและเงียบสงบ เป็นตัวเลือกที่ดีสำหรับคนที่ต้องการบรรยากาศที่ผ่อนคลายและคุ้มค่า',
-                        options: [
-                            { name: 'วิลล่า บาหลี ระยอง', price: 'ประมาณ 12,000 - 20,000 บาท/คืน', pros: ['รีสอร์ทที่มีวิลล่าหลังใหญ่ให้เช่า', 'มีประสบการณ์ในการรับกรุ๊ปใหญ่', 'พื้นที่สวนสวยงาม'], cons: ['อาจไม่เป็นส่วนตัวเท่าบ้านเดี่ยว', 'ต้องยืนยันกฎเรื่องเสียงดังอย่างเคร่งครัด'] },
-                            { name: 'พิมพ์ธารา บีช รีสอร์ท', price: 'ประมาณ 15,000 - 25,000 บาท/คืน', pros: ['บ้านพักติดชายหาด', 'การได้พักอยู่บนหาดทรายเป็นข้อดีอย่างมาก', 'มีพื้นที่กว้างสำหรับปาร์ตี้และบาร์บีคิว'], cons: ['อาจจะอยู่ในช่วงราคาสูงของงบประมาณ', 'ความใกล้ชิดกับแขกคนอื่นอาจเป็นปัญหาเรื่องเสียง'] },
-                            { name: 'บ้านพักส่วนตัวใกล้หาดแม่รำพึง', price: 'ประมาณ 8,000 - 15,000 บาท/คืน', pros: ['มีบ้านพักราคาเข้าถึงได้ให้เลือกเยอะ', 'เหมาะสำหรับทริปกลุ่มแบบสบายๆ ไม่เน้นหรูหรา', 'ใกล้ร้านขายอาหารทะเลสดๆ'], cons: ['คุณภาพที่พักหลากหลาย ต้องอ่านรีวิวดีๆ', 'มักเป็นบ้านพักรุ่นเก่า อาจขาดสิ่งอำนวยความสะดวกทันสมัย'] }
-                        ]
-                    },
-                    {
-                        id: 'huahin',
-                        name: 'หัวหิน / ชะอำ',
-                        description: 'เป็นจุดหมายปลายทางยอดนิยม แต่ที่พักอาจมีราคาสูงกว่า และการเดินทางในช่วงสุดสัปดาห์อาจใช้เวลานานกว่าที่อื่น',
-                        options: [
-                            { name: 'โครงการพูลวิลล่าในหัวหิน', price: 'ประมาณ 16,000 - 30,000 บาท/คืน', pros: ['สร้างขึ้นเพื่อรองรับการปาร์ตี้กลุ่มใหญ่โดยเฉพาะ', 'มีอุปกรณ์ครบทั้งคาราโอเกะ, สระว่ายน้ำ, BBQ', 'อยู่นอกตัวเมืองเพื่อความเป็นส่วนตัว'], cons: ['การเดินทางอาจใช้เวลาเกิน 3 ชั่วโมง', 'ราคาสูงกว่าโซนพัทยา-ระยอง'] },
-                            { name: 'เดอะ ซี-เคร็ท การ์เด้น หัวหิน', price: 'ประมาณ 18,000 - 28,000 บาท/คืน', pros: ['วิลล่าในรีสอร์ทที่สวยงามและได้รับการดูแลอย่างดี', 'มีประสบการณ์ในการรับกรุ๊ปทัวร์', 'สามารถจัดเตรียมอาหารและเครื่องดื่มได้'], cons: ['มีกฎระเบียบเรื่องเสียงดังที่เข้มงวดกว่า', 'ไม่เหมาะกับการปาร์ตี้ตลอดทั้งคืน'] },
-                            { name: 'บ้านพักติดหาด ชะอำ แกรนด์ คอนโดเทล', price: 'ประมาณ 14,000 - 22,000 บาท/คืน', pros: ['บ้านหลังใหญ่ติดหาดชะอำฝั่งที่เงียบสงบ', 'สามารถเดินลงหาดได้เลยและมีพื้นที่กว้างขวาง', 'เหมาะสำหรับกลุ่มใหญ่'], cons: ['มักจะอยู่ในโครงการที่มีผู้อยู่อาศัยอื่น', 'การหาบ้านที่อนุญาตให้จัดปาร์ตี้เสียงดังเป็นเรื่องท้าทาย'] }
-                        ]
-                    }
-                ]
-            };
-            
-            const chartData = {
-                labels: ['ความเป็นส่วนตัว', 'ความคุ้มค่า', 'ใกล้กรุงเทพฯ', 'บรรยากาศ'],
-                datasets: [
-                    { label: 'พัทยา', data: [3, 4, 5, 3], fill: true, backgroundColor: 'rgba(255, 99, 132, 0.2)', borderColor: 'rgb(255, 99, 132)', pointBackgroundColor: 'rgb(255, 99, 132)', pointBorderColor: '#fff', pointHoverBackgroundColor: '#fff', pointHoverBorderColor: 'rgb(255, 99, 132)' },
-                    { label: 'บางเสร่', data: [5, 5, 4, 5], fill: true, backgroundColor: 'rgba(54, 162, 235, 0.2)', borderColor: 'rgb(54, 162, 235)', pointBackgroundColor: 'rgb(54, 162, 235)', pointBorderColor: '#fff', pointHoverBackgroundColor: '#fff', pointHoverBorderColor: 'rgb(54, 162, 235)' },
-                    { label: 'ระยอง', data: [4, 4, 3, 4], fill: true, backgroundColor: 'rgba(75, 192, 192, 0.2)', borderColor: 'rgb(75, 192, 192)', pointBackgroundColor: 'rgb(75, 192, 192)', pointBorderColor: '#fff', pointHoverBackgroundColor: '#fff', pointHoverBorderColor: 'rgb(75, 192, 192)' },
-                    { label: 'หัวหิน', data: [2, 2, 2, 3], fill: true, backgroundColor: 'rgba(255, 205, 86, 0.2)', borderColor: 'rgb(255, 205, 86)', pointBackgroundColor: 'rgb(255, 205, 86)', pointBorderColor: '#fff', pointHoverBackgroundColor: '#fff', pointHoverBorderColor: 'rgb(255, 205, 86)' }
-                ]
-            };
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const navigation = document.getElementById('navigation');
+  const content = document.getElementById('content');
+  
+  let zones = [
+    { id: 'bangsaray', name: 'บางเสร่', description: 'สมดุลระหว่างสงบและปาร์ตี้ เหมาะกับกลุ่มใหญ่' },
+    { id: 'pattaya', name: 'พัทยา', description: 'แหล่งปาร์ตี้สุดฮิต ที่พักเยอะและหลากหลาย' }
+  ];
 
-            Chart.defaults.font.family = "'Sarabun', sans-serif";
-            const ctx = document.getElementById('zoneComparisonChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'radar',
-                data: chartData,
-                options: {
-                    maintainAspectRatio: false,
-                    elements: { line: { borderWidth: 3 } },
-                    scales: {
-                        r: {
-                            angleLines: { color: 'rgba(61, 59, 48, 0.1)' },
-                            grid: { color: 'rgba(61, 59, 48, 0.1)' },
-                            pointLabels: { font: { size: 14, weight: '600' }, color: '#3D3B30' },
-                            ticks: { backdropColor: 'rgba(248, 247, 244, 0.75)', color: '#78716c', stepSize: 1 },
-                            min: 0, max: 5
-                        }
-                    },
-                    plugins: { legend: { position: 'bottom', labels: { font: { size: 14 } } } }
-                }
-            });
+  function renderTabs() {
+    navigation.innerHTML = '';
+    content.innerHTML = '';
+    zones.forEach(zone => {
+      const btn = document.createElement('button');
+      btn.textContent = zone.name;
+      btn.className = 'nav-button px-4 py-2 rounded-full bg-gray-100 hover:bg-gray-200';
+      btn.onclick = () => switchTab(zone.id);
+      navigation.appendChild(btn);
 
-            const navigationContainer = document.getElementById('navigation');
-            const contentContainer = document.getElementById('content');
+      const panel = document.createElement('div');
+      panel.id = zone.id;
+      panel.className = 'content-panel';
+      panel.innerHTML = `<h3 class="text-2xl font-bold text-[#A68B6A] mb-2">${zone.name}</h3>
+                         <p class="text-gray-600">${zone.description}</p>`;
+      content.appendChild(panel);
+    });
+    switchTab(zones[0].id);
+  }
 
-            tripData.zones.forEach(zone => {
-                const button = document.createElement('button');
-                button.textContent = zone.name;
-                button.className = 'nav-button px-4 py-2 md:px-6 md:py-3 rounded-full text-sm md:text-base font-medium text-gray-700 bg-gray-100 hover:bg-gray-200';
-                button.dataset.target = zone.id;
-                navigationContainer.appendChild(button);
+  function switchTab(id) {
+    document.querySelectorAll('.nav-button').forEach(b => {
+      b.classList.toggle('active', b.textContent === zones.find(z => z.id === id).name);
+    });
+    document.querySelectorAll('.content-panel').forEach(p => {
+      p.classList.toggle('active', p.id === id);
+    });
+  }
 
-                const panel = document.createElement('div');
-                panel.id = zone.id;
-                panel.className = 'content-panel';
-                let optionsHtml = zone.options.map(opt => `
-                    <div class="mb-6 pb-6 border-b border-gray-200 last:border-b-0 last:mb-0 last:pb-0">
-                        <h4 class="text-xl font-semibold text-gray-800 mb-2">${opt.name}</h4>
-                        <p class="text-lg font-medium text-[#A68B6A] mb-3">${opt.price}</p>
-                        <div class="grid md:grid-cols-2 gap-4">
-                            <div>
-                                <h5 class="font-semibold mb-2 text-green-600">ข้อดี</h5>
-                                <ul class="pro-con-list space-y-1 text-gray-600">${opt.pros.map(p => `<li>${p}</li>`).join('')}</ul>
-                            </div>
-                            <div>
-                                <h5 class="font-semibold mb-2 text-red-600">ข้อเสีย</h5>
-                                <ul class="pro-con-list cons space-y-1 text-gray-600">${opt.cons.map(c => `<li>${c}</li>`).join('')}</ul>
-                            </div>
-                        </div>
-                    </div>
-                `).join('');
-                
-                panel.innerHTML = `
-                    <h3 class="text-2xl font-bold text-[#A68B6A] mb-2">${zone.name}</h3>
-                    <p class="text-gray-600 mb-8">${zone.description}</p>
-                    ${optionsHtml}
-                `;
-                contentContainer.appendChild(panel);
-            });
-            
-            const navButtons = document.querySelectorAll('.nav-button');
-            const contentPanels = document.querySelectorAll('.content-panel');
+  document.getElementById('addZoneBtn').addEventListener('click', () => {
+    const newName = document.getElementById('newZoneName').value.trim();
+    if (!newName) return;
+    zones.push({ id: newName.toLowerCase().replace(/\s+/g, ''), name: newName, description: 'คุณเพิ่มสถานที่ใหม่นี้เพื่อรีเสิร์ชเอง' });
+    renderTabs();
+    document.getElementById('newZoneName').value = '';
+  });
 
-            function switchTab(targetId) {
-                navButtons.forEach(btn => {
-                    btn.classList.toggle('active', btn.dataset.target === targetId);
-                });
-                contentPanels.forEach(panel => {
-                    panel.classList.toggle('active', panel.id === targetId);
-                });
-            }
+  renderTabs();
 
-            navigationContainer.addEventListener('click', (e) => {
-                if (e.target.matches('.nav-button')) {
-                    switchTab(e.target.dataset.target);
-                }
-            });
-
-            switchTab('bangsaray');
-        });
-    </script>
+  // Chat Function
+  const chatMessages = document.getElementById('chatMessages');
+  document.getElementById('sendBtn').addEventListener('click', () => {
+    const nick = document.getElementById('nickname').value || 'ผู้ใช้ไม่ระบุ';
+    const msg = document.getElementById('chatInput').value.trim();
+    if (!msg) return;
+    const div = document.createElement('div');
+    div.className = 'mb-1';
+    div.innerHTML = `<span class="font-semibold text-[#A68B6A]">${nick}:</span> ${msg}`;
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    document.getElementById('chatInput').value = '';
+  });
+});
+</script>
 </body>
 </html>
